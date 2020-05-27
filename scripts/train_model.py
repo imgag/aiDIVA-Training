@@ -27,53 +27,35 @@ random_seed = 14038
 def read_train_and_test_data(train_data_file, test_data_file):
     train_data = pd.read_csv(train_data_file, sep='\t', low_memory=False)
     test_data = pd.read_csv(test_data_file, sep='\t', low_memory=False)
-    
+
     return train_data, test_data
 
 
-# TODO change features to final feature set (or do it dynamically through config file)
-def prepare_training_data(training_data):
-    training_data['Cadd2'].fillna(0, inplace=True)
-    training_data['Condel'].fillna(0, inplace=True)
-    training_data['SegMentDup'].fillna(0, inplace=True)
-    training_data['PrimatesPhyloP'].fillna(0, inplace=True)
-    training_data['PlacentalMammalPhyloP'].fillna(0, inplace=True)
-    training_data['PrimatesPhastCons'].fillna(0, inplace=True)
-    training_data['PlacentalMammalPhastCons'].fillna(0, inplace=True)
-    training_data['Eigen_Phred'].fillna(0, inplace=True)
-    training_data['MaxAF'].fillna(0, inplace=True)
-    training_data['MutAss'].fillna(training_data['MutAss'].median(), inplace=True)
-    training_data['ABB_score'].fillna(0, inplace=True)
+def prepare_data(data_to_prepare, feature_list):
+    # make sure that the following three parameters are named correctly if they are present in the feature_list
+    for feature in feature_list:
+        if feature == "SegDupMax":
+            data_to_prepare[feature].fillna(0, inplace=True)
+        elif feature == "MaxAF":
+            data_to_prepare[feature].fillna(0, inplace=True)
+        elif feature == "ABB_SCORE":
+            data_to_prepare[feature].fillna(0, inplace=True)
+        else:
+            print(feature)
+            print(data_to_prepare[feature])
+            data_to_prepare[feature].fillna(data_to_prepare[feature].median(), inplace=True)
+            print(data_to_prepare[feature])
 
-    training_labels = np.asarray(training_data['rank'])
-    training_features = np.asarray(training_data[['Cadd2','Condel','SegMentDup','PrimatesPhyloP','PlacentalMammalPhyloP', 'PrimatesPhastCons', 'PlacentalMammalPhastCons', 'Eigen_Phred','MaxAF','MutAss','ABB_score']])
+    prepared_labels = np.asarray(data_to_prepare["RANK"])
+    prepared_features = np.asarray(data_to_prepare[feature_list])
 
-    return training_features, training_labels
-
-
-# TODO change features to final feature set (or do it dynamically through config file)
-def prepare_independent_testing_data(independent_testing_data):    
-    independent_testing_data['Cadd2'].fillna(independent_testing_data['Cadd2'].median(), inplace=True)
-    independent_testing_data['Condel'].fillna(independent_testing_data['Condel'].median(), inplace=True)
-    independent_testing_data['SegMentDup'].fillna(0, inplace=True)
-    independent_testing_data['PrimatesPhyloP'].fillna(independent_testing_data['PrimatesPhyloP'].median(), inplace=True)
-    independent_testing_data['PlacentalMammalPhyloP'].fillna(independent_testing_data['PlacentalMammalPhyloP'].median(), inplace=True)
-    independent_testing_data['PrimatesPhastCons'].fillna(independent_testing_data['PrimatesPhastCons'].median(), inplace=True)
-    independent_testing_data['PlacentalMammalPhastCons'].fillna(independent_testing_data['PlacentalMammalPhastCons'].median(), inplace=True)
-    independent_testing_data['Eigen_Phred'].fillna(independent_testing_data['Eigen_Phred'].median(), inplace=True)
-    independent_testing_data['MaxAF'].fillna(0, inplace=True)
-    independent_testing_data['MutAss'].fillna(independent_testing_data['MutAss'].median(), inplace=True)
-    independent_testing_data['ABB_score'].fillna(0, inplace=True)
-
-    independent_testing_labels = np.asarray(independent_testing_data['rank'])
-    independent_testing_features = np.asarray(independent_testing_data[['Cadd2','Condel','SegMentDup','PrimatesPhyloP','PlacentalMammalPhyloP', 'PrimatesPhastCons', 'PlacentalMammalPhastCons', 'Eigen_Phred','MaxAF','MutAss','ABB_score']])
-
-    return independent_testing_features, independent_testing_labels
+    return prepared_features, prepared_labels
 
 
 def train_model_with_gridsearch(training_features, training_labels):
     train_features, test_features, train_labels, test_labels = train_test_split(training_features, training_labels, test_size = 0.2, random_state = random_seed)
 
+    # grid with the default parameters
     parameter_grid = {"n_estimators": [1000],
                       "criterion": ["gini"],
                       "max_depth": [None],
@@ -90,7 +72,7 @@ def train_model_with_gridsearch(training_features, training_labels):
     grid_search.fit(training_features, training_labels)
 
     best_grid = grid_search.best_estimator_
-    
+
     return best_grid
 
 
@@ -116,15 +98,18 @@ if __name__=='__main__':
     parser.add_argument('--train_data', type=str, dest='train_data', metavar='train.csv', required=True, help='CSV file containing the training data, used to train the random forest model\n')
     parser.add_argument('--test_data', type=str, dest='test_data', metavar='tets.csv', required=True, help='CSV file containing the test data, used to compute the model statistics\n')
     parser.add_argument('--model', type=str, dest='model', metavar='model.pkl', required=True, help='Specifies the name of the trained model to export\n')
+    parser.add_argument('--model', type=str, dest='feature_list', required=True, help='List containing the features that should be used in the training\n')
     args = parser.parse_args()
-    
+
     train_data, test_data = read_train_and_test_data(args.train_data, args.test_data)
-    
-    train_features, train_labels = prepare_training_data(train_data)
-    test_features, test_labels = prepare_independent_testing_data(test_data)
+
+    feature_list = args.feature_list
+
+    train_features, train_labels = prepare_data(train_data, feature_list)
+    test_features, test_labels = prepare_data(test_data, feature_list)
 
     trained_rf_model = train_model_with_gridsearch(train_features, train_labels)
-    
+
     compute_model_statistics(trained_rf_model, test_features, test_labels)
-    
+
     export_trained_model(args.model, trained_rf_model)
