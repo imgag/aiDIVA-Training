@@ -1,14 +1,3 @@
-#################################################################################################
-#################################################################################################
-########                                                                           ##############
-########                                                                           ##############
-########                                                                           ##############
-########                                                                           ##############
-########                                                                           ##############
-#################################################################################################
-#################################################################################################
-
-import sys
 import argparse
 import pandas as pd
 import numpy as np
@@ -31,29 +20,15 @@ def read_train_and_test_data(train_data_file, test_data_file):
     return train_data, test_data
 
 
-def prepare_data(data_to_prepare, feature_list):
-    # make sure that the following three parameters are named correctly if they are present in the feature_list
-    for feature in feature_list:
-        if feature == "SegDupMax":
-            data_to_prepare[feature].fillna(0, inplace=True)
-        elif feature == "MaxAF":
-            data_to_prepare[feature].fillna(0, inplace=True)
-        elif feature == "ABB_SCORE":
-            data_to_prepare[feature].fillna(0, inplace=True)
-        else:
-            print(feature)
-            print(data_to_prepare[feature])
-            data_to_prepare[feature].fillna(data_to_prepare[feature].median(), inplace=True)
-            print(data_to_prepare[feature])
-
+def extract_features_from_input_data(data_to_extract, feature_list):
     prepared_labels = np.asarray(data_to_prepare["RANK"])
     prepared_features = np.asarray(data_to_prepare[feature_list])
 
     return prepared_features, prepared_labels
 
 
-def train_model_with_gridsearch(training_features, training_labels):
-    train_features, test_features, train_labels, test_labels = train_test_split(training_features, training_labels, test_size = 0.2, random_state = random_seed)
+def train_model_with_gridsearch(training_data):
+    extract_features_from_training_data
 
     # grid with the default parameters
     parameter_grid = {"n_estimators": [1000],
@@ -79,11 +54,7 @@ def train_model_with_gridsearch(training_features, training_labels):
 def compute_model_statistics(trained_model, test_features, test_labels):
     print("Parameters of the trained model: \n")
     pprint(trained_model.get_params())
-    print("Mean accuracy: ", trained_model.score(test_features, test_labels))    #grid_accuracy =evaluate(best_grid, test_features, test_labels)
-
-    #print("Improvement of {:0.2f}%.".format(100 * (grid_accuracy - base_accuracy) / base_accuracy))
-
-    #print(clf.feature_importances_)
+    print("Mean accuracy: ", trained_model.score(test_features, test_labels))
 
 
 def export_trained_model(export_file, model_to_export):
@@ -93,23 +64,23 @@ def export_trained_model(export_file, model_to_export):
     pickle.dump(model_to_export, open(export_file, 'wb'))
 
 
+def perform_model_training_and_evaluation(feature_list, training_data, test_data=None, model_name):
+    training_features, training_labels = extract_features_from_input_data(training_data, feature_list)
+
+    trained_rf_model = train_model_with_gridsearch(training_features, training_labels)
+    export_trained_model(model_name, trained_rf_model)
+
+    # compute basic evalution scores if test data is present
+    test_features, test_labels = extract_features_from_input_data(test_data, feature_list)
+    compute_model_statistics(trained_rf_model, test_features, test_labels)
+
+
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_data', type=str, dest='train_data', metavar='train.csv', required=True, help='CSV file containing the training data, used to train the random forest model\n')
     parser.add_argument('--test_data', type=str, dest='test_data', metavar='tets.csv', required=True, help='CSV file containing the test data, used to compute the model statistics\n')
-    parser.add_argument('--model', type=str, dest='model', metavar='model.pkl', required=True, help='Specifies the name of the trained model to export\n')
-    parser.add_argument('--model', type=str, dest='feature_list', required=True, help='List containing the features that should be used in the training\n')
+    parser.add_argument('--model_name', type=str, dest='model_name', metavar='model.pkl', required=True, help='Specifies the name of the trained model to export\n')
+    parser.add_argument('--feature_list', type=str, dest='feature_list', required=True, help='List containing the features that should be used in the training\n')
     args = parser.parse_args()
 
-    train_data, test_data = read_train_and_test_data(args.train_data, args.test_data)
-
-    feature_list = args.feature_list
-
-    train_features, train_labels = prepare_data(train_data, feature_list)
-    test_features, test_labels = prepare_data(test_data, feature_list)
-
-    trained_rf_model = train_model_with_gridsearch(train_features, train_labels)
-
-    compute_model_statistics(trained_rf_model, test_features, test_labels)
-
-    export_trained_model(args.model, trained_rf_model)
+    perform_model_training_and_evaluation(args.feature_list, args.train_data, args.test_data, args.model_name)
