@@ -8,6 +8,25 @@ random_seed = 14038
 
 ## customize this method according to the features used in the training
 def prepare_data_and_fill_missing_values(data_to_prepare, feature_list):
+    data_to_prepare["gnomAD_AF"] = data_to_prepare["gnomAD_AF"].fillna(0)
+    data_to_prepare["gnomAD_AFR_AF"] = data_to_prepare["gnomAD_AFR_AF"].fillna(0)
+    data_to_prepare["gnomAD_AMF_AF"] = data_to_prepare["gnomAD_AMR_AF"].fillna(0)
+    data_to_prepare["gnomAD_ASJ_AF"] = data_to_prepare["gnomAD_ASJ_AF"].fillna(0)
+    data_to_prepare["gnomAD_EAS_AF"] = data_to_prepare["gnomAD_EAS_AF"].fillna(0)
+    data_to_prepare["gnomAD_FIN_AF"] = data_to_prepare["gnomAD_FIN_AF"].fillna(0)
+    data_to_prepare["gnomAD_NFE_AF"] = data_to_prepare["gnomAD_NFE_AF"].fillna(0)
+    data_to_prepare["gnomAD_OTH_AF"] = data_to_prepare["gnomAD_OTH_AF"].fillna(0)
+    data_to_prepare["gnomAD_SAS_AF"] = data_to_prepare["gnomAD_SAS_AF"].fillna(0)
+
+    data_to_prepare["AF"] = data_to_prepare["AF"].fillna(0)
+    data_to_prepare["AA_AF"] = data_to_prepare["AA_AF"].fillna(0)
+    data_to_prepare["EA_AF"] = data_to_prepare["EA_AF"].fillna(0)
+    data_to_prepare["AFR_AF"] = data_to_prepare["AFR_AF"].fillna(0)
+    data_to_prepare["AMR_AF"] = data_to_prepare["AMR_AF"].fillna(0)
+    data_to_prepare["EAS_AF"] = data_to_prepare["EAS_AF"].fillna(0)
+    data_to_prepare["EUR_AF"] = data_to_prepare["EUR_AF"].fillna(0)
+    data_to_prepare["SAS_AF"] = data_to_prepare["SAS_AF"].fillna(0)
+
     data_to_prepare["gnomAD_AF"] = data_to_prepare["gnomAD_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
     data_to_prepare["gnomAD_AFR_AF"] = data_to_prepare["gnomAD_AFR_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
     data_to_prepare["gnomAD_AMF_AF"] = data_to_prepare["gnomAD_AMR_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
