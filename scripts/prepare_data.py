@@ -3,81 +3,66 @@ import pandas as pd
 import numpy as np
 
 
+mean_dict = {"phastCons46mammal": 0.09691308336428194,
+             "phastCons46primate": 0.12353343703613741,
+             "phastCons46vertebrate": 0.1366339183101041,
+             "phyloP46mammal": -0.0063575303590607925,
+             "phyloP46primate": -0.012076641890840553,
+             "phyloP46vertebrate": 0.06761867323083483,
+             "phastCons100": 0.11273633387190414,
+             "phyloP100": 0.052907788505469275,
+             "custom_MutationAssessor": 1.7961304794577417,
+             "fannsdb_CONDEL": 0.49699016949707825,
+             "custom_EIGEN_PHRED": 4.342947928406315,
+             "CADD_PHRED": 4.471745325,
+             "custom_FATHMM_XF": 0.35846023623584666,
+             "SIFT": 0.35216996259535444,
+             "REVEL": 0.28019263637740743,
+             "PolyPhen": 0.5169017014355943}
+
+
+median_dict = {"custom_MutationAssessor": 1.87,
+               "fannsdb_CONDEL": 0.4805749233199981,
+               "custom_EIGEN_PHRED": 3.010301,
+               "CADD_PHRED": 3.99,
+               "custom_FATHMM_XF": 0.209614,
+               "SIFT": 0.153,
+               "REVEL": 0.193,
+               "PolyPhen": 0.547}
+
+
 random_seed = 14038
 
 
 ## customize this method according to the features used in the training
-def prepare_data_and_fill_missing_values(data_to_prepare, feature_list):
+def prepare_data_and_fill_missing_values(data_to_prepare, allele_frequency_list, feature_list):
     # make sure all population allele frequencies are present in the input file
-    data_to_prepare["gnomAD_AF"] = data_to_prepare["gnomAD_AF"].fillna(0)
-    data_to_prepare["gnomAD_AFR_AF"] = data_to_prepare["gnomAD_AFR_AF"].fillna(0)
-    data_to_prepare["gnomAD_AMR_AF"] = data_to_prepare["gnomAD_AMR_AF"].fillna(0)
-    data_to_prepare["gnomAD_ASJ_AF"] = data_to_prepare["gnomAD_ASJ_AF"].fillna(0)
-    data_to_prepare["gnomAD_EAS_AF"] = data_to_prepare["gnomAD_EAS_AF"].fillna(0)
-    data_to_prepare["gnomAD_FIN_AF"] = data_to_prepare["gnomAD_FIN_AF"].fillna(0)
-    data_to_prepare["gnomAD_NFE_AF"] = data_to_prepare["gnomAD_NFE_AF"].fillna(0)
-    data_to_prepare["gnomAD_OTH_AF"] = data_to_prepare["gnomAD_OTH_AF"].fillna(0)
-    data_to_prepare["gnomAD_SAS_AF"] = data_to_prepare["gnomAD_SAS_AF"].fillna(0)
+    for allele_frequency in allele_frequency_list:
+        input_data[allele_frequency] = input_data[allele_frequency].fillna(0)
+        input_data[allele_frequency] = input_data[allele_frequency].apply(lambda row: pd.Series(max([float(frequency) for frequency in str(row).split("&")], default=np.nan)))
 
-    data_to_prepare["AF"] = data_to_prepare["AF"].fillna(0)
-    data_to_prepare["AA_AF"] = data_to_prepare["AA_AF"].fillna(0)
-    data_to_prepare["EA_AF"] = data_to_prepare["EA_AF"].fillna(0)
-    data_to_prepare["AFR_AF"] = data_to_prepare["AFR_AF"].fillna(0)
-    data_to_prepare["AMR_AF"] = data_to_prepare["AMR_AF"].fillna(0)
-    data_to_prepare["EAS_AF"] = data_to_prepare["EAS_AF"].fillna(0)
-    data_to_prepare["EUR_AF"] = data_to_prepare["EUR_AF"].fillna(0)
-    data_to_prepare["SAS_AF"] = data_to_prepare["SAS_AF"].fillna(0)
-
-    data_to_prepare["gnomAD_AF"] = data_to_prepare["gnomAD_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["gnomAD_AFR_AF"] = data_to_prepare["gnomAD_AFR_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["gnomAD_AMR_AF"] = data_to_prepare["gnomAD_AMR_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["gnomAD_ASJ_AF"] = data_to_prepare["gnomAD_ASJ_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["gnomAD_EAS_AF"] = data_to_prepare["gnomAD_EAS_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["gnomAD_FIN_AF"] = data_to_prepare["gnomAD_FIN_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["gnomAD_NFE_AF"] = data_to_prepare["gnomAD_NFE_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["gnomAD_OTH_AF"] = data_to_prepare["gnomAD_OTH_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["gnomAD_SAS_AF"] = data_to_prepare["gnomAD_SAS_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-
-    data_to_prepare["AF"] = data_to_prepare["AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["AA_AF"] = data_to_prepare["AA_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["EA_AF"] = data_to_prepare["EA_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["AFR_AF"] = data_to_prepare["AFR_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["AMR_AF"] = data_to_prepare["AMR_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["EAS_AF"] = data_to_prepare["EAS_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["EUR_AF"] = data_to_prepare["EUR_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-    data_to_prepare["SAS_AF"] = data_to_prepare["SAS_AF"].apply(lambda row: max([float(value) for value in str(row).split("&")]))
-
+    # compute maximum Minor Allele Frequency (MAF)
     if not "MaxAF" in data_to_prepare.columns:
-        data_to_prepare[["MaxAF"]] = data_to_prepare.apply(lambda row: pd.Series(max([float(row["AFR_AF"]), float(row["AMR_AF"]), float(row["EAS_AF"]), float(row["EUR_AF"]), float(row["SAS_AF"]), float(row["AA_AF"]), float(row["EA_AF"]), float(row["gnomAD_AFR_AF"]), float(row["gnomAD_AMR_AF"]), float(row["gnomAD_ASJ_AF"]), float(row["gnomAD_EAS_AF"]), float(row["gnomAD_FIN_AF"]), float(row["gnomAD_NFE_AF"]), float(row["gnomAD_OTH_AF"]), float(row["gnomAD_SAS_AF"])])), axis=1)
-
-    data_to_prepare["SIFT"] = data_to_prepare["SIFT"].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["PolyPhen"] = data_to_prepare["PolyPhen"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["Condel"] = data_to_prepare["Condel"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["CADD_PHRED"] = data_to_prepare["CADD_PHRED"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["CADD_RAW"] = data_to_prepare["CADD_RAW"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["REVEL"] = data_to_prepare["REVEL"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["segmentDuplication"] = data_to_prepare["segmentDuplication"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    #data_to_prepare["simpleRepeat"] = data_to_prepare["simpleRepeat"].apply(lambda row: max([float(value) for value in str(row).split("&") if (value != "." & value != "nan")]))
-    #data_to_prepare["custom_EIGEN_PHRED"] = data_to_prepare["custom_EIGEN_PHRED"].apply(lambda row: max([float(value) for value in str(row).split("&") if (value != "." & value != "nan")]))
-    data_to_prepare["custom_SIFT"] = data_to_prepare["custom_SIFT"].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["fannsdb_CONDEL"] = data_to_prepare["fannsdb_CONDEL"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["fannsdb_FATHMM"] = data_to_prepare["fannsdb_FATHMM"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["fannsdb_MA"] = data_to_prepare["fannsdb_MA"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["fannsdb_POLYPHEN2"] = data_to_prepare["fannsdb_POLYPHEN2"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["fannsdb_SIFT"] = data_to_prepare["fannsdb_SIFT"].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["custom_MutationAssessor"] = data_to_prepare["custom_MutationAssessor"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
-    data_to_prepare["custom_FATHMM_XF"] = data_to_prepare["custom_FATHMM_XF"].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan"))], default=np.nan))
+    input_data["MaxAF"] = input_data.apply(lambda row: pd.Series(max([float(frequency) for frequency in row[allele_frequency_list].tolist()])), axis=1)
 
     # make sure that the following three parameters are named correctly if they are present in the feature_list
     for feature in feature_list:
-        if feature == "segmentDuplication":
-            data_to_prepare[feature].fillna(0, inplace=True)
-        elif feature == "MaxAF":
-            data_to_prepare[feature].fillna(0, inplace=True)
+        if feature == "MaxAF" or feature == "MAX_AF":
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(0)
+        elif feature == "segmentDuplication":
+            data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(0)
         elif feature == "ABB_SCORE":
-            data_to_prepare[feature].fillna(0, inplace=True)
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(0)
+        elif "SIFT" in feature:
+            data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["SIFT"])
         else:
-            data_to_prepare[feature].fillna(data_to_prepare[feature].median(), inplace=True)
+            data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
+            if ("phastCons" in feature) | ("phyloP" in feature):
+                data_to_prepare[feature] = data_to_prepare[feature].fillna(mean_dict[feature])
+            else:
+                data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict[feature])
 
     return data_to_prepare
 

@@ -47,7 +47,7 @@ def train_model_with_gridsearch(training_features, training_labels):
                       }
 
     rf_clf = RandomForestClassifier(random_state = random_seed)
-    grid_search = GridSearchCV(estimator = rf_clf, param_grid = parameter_grid, cv = 5, n_jobs = -1, verbose = 2)
+    grid_search = GridSearchCV(estimator = rf_clf, param_grid = parameter_grid, cv = 10, n_jobs = -1, verbose = 2)
     grid_search.fit(training_features, training_labels)
 
     best_grid = grid_search.best_estimator_
@@ -57,10 +57,10 @@ def train_model_with_gridsearch(training_features, training_labels):
 
 def compute_model_statistics(trained_model, test_features, test_labels):
     prediction = trained_model.predict(test_features)
-    
+
     print("Parameters of the trained model: \n")
     pprint(trained_model.get_params())
-    print("Mean accuracy: ", trained_model.score(test_features, test_labels))    
+    print("Mean accuracy: ", trained_model.score(test_features, test_labels))
     print("Accuracy: ", accuracy_score(test_labels, prediction))
     print("Balanced-Accuracy: ", balanced_accuracy_score(test_labels, prediction))
     print("Precision: ", precision_score(test_labels, prediction))
