@@ -42,8 +42,8 @@ def prepare_data_and_fill_missing_values(data_to_prepare, allele_frequency_list,
         input_data[allele_frequency] = input_data[allele_frequency].apply(lambda row: pd.Series(max([float(frequency) for frequency in str(row).split("&")], default=np.nan)))
 
     # compute maximum Minor Allele Frequency (MAF)
-    if not "MaxAF" in data_to_prepare.columns:
-    input_data["MaxAF"] = input_data.apply(lambda row: pd.Series(max([float(frequency) for frequency in row[allele_frequency_list].tolist()])), axis=1)
+    if not ("MaxAF" in data_to_prepare.columns or "MAX_AF" in data_to_prepare.columns):
+        input_data["MaxAF"] = input_data.apply(lambda row: pd.Series(max([float(frequency) for frequency in row[allele_frequency_list].tolist()])), axis=1)
 
     # make sure that the following three parameters are named correctly if they are present in the feature_list
     for feature in feature_list:
@@ -67,10 +67,10 @@ def prepare_data_and_fill_missing_values(data_to_prepare, allele_frequency_list,
     return data_to_prepare
 
 
-def perform_preparation_and_save(in_data, out_data, feature_list):
+def perform_preparation_and_save(in_data, out_data, allele_frequency_list, feature_list):
     data_to_prepare = pd.read_csv(in_data, sep='\t', low_memory=False)
 
-    prepared_data = prepare_data_and_fill_missing_values(data_to_prepare, feature_list)
+    prepared_data = prepare_data_and_fill_missing_values(data_to_prepare, allele_frequency_list, feature_list)
     prepared_data.to_csv(out_data, sep="\t", index=False)
 
 
@@ -83,4 +83,4 @@ if __name__=='__main__':
 
     feature_list = args.feature_list.split(",")
 
-    perform_preparation_and_save(args.in_data, args.out_data, feature_list)
+    perform_preparation_and_save(args.in_data, args.out_data, list(), feature_list)
