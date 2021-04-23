@@ -4,12 +4,14 @@ import numpy as np
 import pickle
 from pprint import pprint
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.datasets import make_classification
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import balanced_accuracy_score
+#from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import average_precision_score
@@ -33,9 +35,9 @@ def extract_features_from_input_data(data_to_extract, feature_list):
     return extracted_features, extracted_labels
 
 
-def train_model_with_gridsearch(training_features, training_labels):
+def train_model_with_gridsearch(training_features, training_labels, feature_list):
     # grid with the default parameters
-    parameter_grid = {"n_estimators": [1000],
+    parameter_grid_rf = {"n_estimators": [1000],
                       "criterion": ["gini"],
                       "max_depth": [None],
                       "max_features": ["auto"],
@@ -46,11 +48,31 @@ def train_model_with_gridsearch(training_features, training_labels):
                       "oob_score": [False]
                       }
 
+    parameter_grid_ab = {"n_estimators": [50,100,500,1000],
+                      "base_estimator__criterion": ["gini"],
+                      "base_estimator__max_depth": [2,7,None],
+                      "base_estimator__max_features": ["auto"],
+                      "base_estimator__min_samples_split": [2],
+                      "base_estimator__min_samples_leaf": [1],
+                      "learning_rate": [0.5,1,1.5]
+                      }
+
     rf_clf = RandomForestClassifier(random_state = random_seed)
-    grid_search = GridSearchCV(estimator = rf_clf, param_grid = parameter_grid, cv = 10, n_jobs = -1, verbose = 2)
+    #ab_clf = AdaBoostClassifier(base_estimator = DecisionTreeClassifier(),random_state = random_seed)
+    grid_search = GridSearchCV(estimator = rf_clf, param_grid = parameter_grid_rf, cv = 10, n_jobs = 10, verbose = 2)
     grid_search.fit(training_features, training_labels)
 
     best_grid = grid_search.best_estimator_
+    
+    importances = best_grid.feature_importances_
+    std = np.std([best_grid.feature_importances_ for tree in best_grid.estimators_], axis=0)
+    indices = np.argsort(importances)[::-1]
+
+    print("Feature ranking:")
+
+    for f in range(training_features.shape[1]):
+        #print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
+        print("%d. feature %s (%f)" % (f + 1, feature_list[indices[f]], importances[indices[f]]))
 
     return best_grid
 
@@ -62,12 +84,13 @@ def compute_model_statistics(trained_model, test_features, test_labels):
     pprint(trained_model.get_params())
     print("Mean accuracy: ", trained_model.score(test_features, test_labels))
     print("Accuracy: ", accuracy_score(test_labels, prediction))
-    print("Balanced-Accuracy: ", balanced_accuracy_score(test_labels, prediction))
+    #print("Balanced-Accuracy: ", balanced_accuracy_score(test_labels, prediction))
     print("Precision: ", precision_score(test_labels, prediction))
     print("Recall: ", recall_score(test_labels, prediction))
     print("Average-Precision: ", average_precision_score(test_labels, prediction))
     print("Matthews Correlation Coefficient: ", matthews_corrcoef(test_labels, prediction))
-
+    
+    
 
 def export_trained_model(export_file, model_to_export):
     if not export_file.endswith('.pkl'):
@@ -79,7 +102,7 @@ def export_trained_model(export_file, model_to_export):
 def perform_model_training_and_evaluation(feature_list, training_data, test_data, model_name):
     training_features, training_labels = extract_features_from_input_data(training_data, feature_list)
 
-    trained_rf_model = train_model_with_gridsearch(training_features, training_labels)
+    trained_rf_model = train_model_with_gridsearch(training_features, training_labels, feature_list)
     export_trained_model(model_name, trained_rf_model)
 
     # compute basic evalution scores if test data is present
@@ -98,5 +121,9 @@ if __name__=='__main__':
     train_data = pd.read_csv(args.train_data, sep="\t", low_memory=False)
     test_data = pd.read_csv(args.test_data, sep="\t", low_memory=False)
     feature_list = args.feature_list.split(",")
+    
+    #print(train_data.columns)
+    #print(test_data.columns)
+    #print(feature_list)
 
     perform_model_training_and_evaluation(feature_list, train_data, test_data, args.model_name)
