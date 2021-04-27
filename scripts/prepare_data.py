@@ -147,6 +147,8 @@ def prepare_data_and_fill_missing_values(data_to_prepare, allele_frequency_list,
         elif (feature == "SIFT"):
             data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
             data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["SIFT"])
+        elif feature == "custom_CAPICE":
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(0.5)
         elif (feature == "SIFT_score"):
             data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
             data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["SIFT_score"])
