@@ -105,6 +105,7 @@ def extract_columns(cell):
     gnomAD_hom = np.nan
     gnomAD_an = np.nan
     gnomAD_homAF = np.nan
+    capice = np.nan
 
     for field in info_fields:
         if field == "nan":
@@ -122,33 +123,36 @@ def extract_columns(cell):
             rank = field.split("=")[1]
         if field.startswith("INDEL_ID="):
             indel_ID = field.split("=")[1]
-        #if field.startswith("FATHMM_XF="):
-        #    if field.split("=")[1] != "nan":
-        #        fathmm_xf = field.split("=")[1]
-        #if field.startswith("CONDEL="):
-        #    if field.split("=")[1] != "nan":
-        #        condel = field.split("=")[1]
-        #if field.startswith("EIGEN_PHRED="):
-        #    if field.split("=")[1] != "nan":
-        #        eigen_phred = field.split("=")[1]
-        #if field.startswith("MutationAssessor="):
-        #    if field.split("=")[1] != "nan":
-        #        mutation_assessor = field.split("=")[1]
-        #if field.startswith("gnomAD_Hom"):
-        #    if field.split("=")[1] != "nan":
-        #        gnomAD_hom = float(field.split("=")[1])
-        #if field.startswith("gnomAD_AN"):
-        #    if field.split("=")[1] != "nan":
-        #        gnomAD_an = float(field.split("=")[1])
+        if field.startswith("FATHMM_XF="):
+            if field.split("=")[1] != "nan":
+                fathmm_xf = field.split("=")[1]
+        if field.startswith("CONDEL="):
+            if field.split("=")[1] != "nan":
+                condel = field.split("=")[1]
+        if field.startswith("EIGEN_PHRED="):
+            if field.split("=")[1] != "nan":
+                eigen_phred = field.split("=")[1]
+        if field.startswith("MutationAssessor="):
+            if field.split("=")[1] != "nan":
+                mutation_assessor = field.split("=")[1]
+        if field.startswith("gnomAD_Hom"):
+            if field.split("=")[1] != "nan":
+                gnomAD_hom = float(field.split("=")[1])
+        if field.startswith("gnomAD_AN"):
+            if field.split("=")[1] != "nan":
+                gnomAD_an = float(field.split("=")[1])
+        if field.startswith("CAPICE"):
+            if field.split("=")[1] != "nan":
+                capice = float(field.split("=")[1])
 
-        #if (gnomAD_hom > 0.0) & (gnomAD_an > 0.0):
-        #    gnomAD_homAF = gnomAD_hom / gnomAD_an
+        if (gnomAD_hom != np.nan) & (gnomAD_an != np.nan) & (gnomAD_hom > 0.0) & (gnomAD_an > 0.0):
+            gnomAD_homAF = gnomAD_hom / gnomAD_an
         
         #else:
         #    print("SKIP INFORMATION ENTRY")
 
-    #return [rank, indel_ID, csq, fathmm_xf, condel, eigen_phred, mutation_assessor, gnomAD_homAF]
-    return [rank, indel_ID, csq]
+    return [rank, indel_ID, csq, fathmm_xf, condel, eigen_phred, mutation_assessor, gnomAD_homAF, capice]
+    #return [rank, indel_ID, csq]
 
 
 def extract_vep_annotation(cell, annotation_header):
@@ -167,8 +171,8 @@ def extract_vep_annotation(cell, annotation_header):
 
 
 def add_INFO_fields_to_dataframe(vcf_as_dataframe):
-    #vcf_as_dataframe[["RANK","indel_ID", "CSQ", "FATHMM_XF", "CONDEL", "EIGEN_PHRED", "MutationAssessor", "homAF"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
-    vcf_as_dataframe[["RANK","INDEL_ID", "CSQ"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
+    vcf_as_dataframe[["RANK","INDEL_ID", "CSQ", "FATHMM_XF", "CONDEL", "EIGEN_PHRED", "MutationAssessor", "homAF", "CAPICE"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
+    #vcf_as_dataframe[["RANK","INDEL_ID", "CSQ"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
     vcf_as_dataframe = vcf_as_dataframe.drop(columns=["INFO"])
 
     return vcf_as_dataframe
@@ -303,10 +307,10 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     vcf_as_dataframe = convert_vcf_to_pandas_dataframe(args.in_data)
-    vcf_as_dataframe["homAF"] = vcf_as_dataframe.apply(lambda x: pd.Series(calculate_homAF(x)), axis=1)
+    #vcf_as_dataframe["homAF"] = vcf_as_dataframe.apply(lambda x: pd.Series(calculate_homAF(x)), axis=1)
     expanded_vcf_as_dataframe = convert_vcf_to_pandas_dataframe(args.in_data_expanded)
 
-    # "SIFT,PolyPhen,REVEL,CADD_PHRED,ABB_SCORE,MAX_AF,segmentDuplication,EIGEN_PHRED,CONDEL,FATHMM_XF,MutationAssessor,phastCons46mammal,phastCons46primate,phastCons46vertebrate,phyloP46mammal,phyloP46primate,phyloP46vertebrate,oe_lof,homAF"
+    # "SIFT,PolyPhen,REVEL,CADD_PHRED,ABB_SCORE,MAX_AF,segmentDuplication,EIGEN_PHRED,CONDEL,FATHMM_XF,MutationAssessor,phastCons46mammal,phastCons46primate,phastCons46vertebrate,phyloP46mammal,phyloP46primate,phyloP46vertebrate,oe_lof,homAF,CAPICE"
     feature_list = args.feature_list.split(",")
     vcf_combined_as_dataframe = parallelized_indel_combination(vcf_as_dataframe, expanded_vcf_as_dataframe, feature_list, 1)
     write_vcf_to_csv(vcf_combined_as_dataframe, args.out_data)

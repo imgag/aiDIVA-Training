@@ -164,6 +164,7 @@ def extract_columns(cell):
     gnomAD_an = np.nan
     gnomAD_homAF = np.nan
     oe_lof = np.nan
+    capice = np.nan
     annotation = ""
 
     if "INDEL_ID" in str(cell):
@@ -174,66 +175,72 @@ def extract_columns(cell):
                 indel_ID = field.split("=")[1]
             if field.startswith("CSQ="):
                 annotation = field.split("=")[1]
-            #if field.startswith("FATHMM_XF="):
-            #    if field.split("=")[1] != "nan":
-            #        fathmm_xf = field.split("=")[1]
-            #if field.startswith("CONDEL="):
-            #    if field.split("=")[1] != "nan":
-            #        condel = field.split("=")[1]
-            #if field.startswith("EIGEN_PHRED="):
-            #    if field.split("=")[1] != "nan":
-            #        eigen_phred = field.split("=")[1]
-            #if field.startswith("MutationAssessor="):
-            #    if field.split("=")[1] != "nan":
-            #        mutation_assessor = field.split("=")[1]
+            if field.startswith("FATHMM_XF="):
+                if field.split("=")[1] != "nan":
+                    fathmm_xf = field.split("=")[1]
+            if field.startswith("CONDEL="):
+                if field.split("=")[1] != "nan":
+                    condel = field.split("=")[1]
+            if field.startswith("EIGEN_PHRED="):
+                if field.split("=")[1] != "nan":
+                    eigen_phred = field.split("=")[1]
+            if field.startswith("MutationAssessor="):
+                if field.split("=")[1] != "nan":
+                    mutation_assessor = field.split("=")[1]
             #if field.startswith("oe_lof="):
             #    if field.split("=")[1] != "nan":
             #        oe_lof = field.split("=")[1]
-            #if field.startswith("gnomAD_Hom="):
-            #    if field.split("=")[1] != "nan":
-            #        gnomAD_hom = float(field.split("=")[1])
-            #if field.startswith("gnomAD_AN="):
-            #    if field.split("=")[1] != "nan":
-            #        gnomAD_an = float(field.split("=")[1])
+            if field.startswith("gnomAD_Hom="):
+                if field.split("=")[1] != "nan":
+                    gnomAD_hom = float(field.split("=")[1])
+            if field.startswith("gnomAD_AN="):
+                if field.split("=")[1] != "nan":
+                    gnomAD_an = float(field.split("=")[1])
+            if field.startswith("CAPICE"):
+                if field.split("=")[1] != "nan":
+                    capice = float(field.split("=")[1])
 
-            #if (gnomAD_hom > 0.0) & (gnomAD_an > 0.0):
-            #    gnomAD_homAF = gnomAD_hom / gnomAD_an
+            if (gnomAD_hom != np.nan) & (gnomAD_an != np.nan) & (gnomAD_hom > 0.0) & (gnomAD_an > 0.0):
+                gnomAD_homAF = gnomAD_hom / gnomAD_an
 
-        #return [rank, indel_ID, annotation, fathmm_xf, condel, eigen_phred, mutation_assessor, gnomAD_homAF, oe_lof]
-        return [rank, indel_ID, annotation]
+        return [rank, indel_ID, annotation, fathmm_xf, condel, eigen_phred, mutation_assessor, gnomAD_homAF, capice]
+        #return [rank, indel_ID, annotation]
     else:
         for field in info_fields:
             if field.startswith("RANK="):
                 rank = field.split("=")[1]
             if field.startswith("CSQ="):
                 annotation = field.split("=")[1]
-            #if field.startswith("FATHMM_XF="):
-            #    if field.split("=")[1] != "nan":
-            #        fathmm_xf = field.split("=")[1]
-            #if field.startswith("CONDEL="):
-            #    if field.split("=")[1] != "nan":
-            #        condel = field.split("=")[1]
-            #if field.startswith("EIGEN_PHRED="):
-            #    if field.split("=")[1] != "nan":
-            #        eigen_phred = field.split("=")[1]
-            #if field.startswith("MutationAssessor="):
-            #    if field.split("=")[1] != "nan":
-            #        mutation_assessor = field.split("=")[1]
-            #if field.startswith("oe_lof="):
-            #    if field.split("=")[1] != "nan":
-            #        oe_lof = field.split("=")[1]
-            #if field.startswith("gnomAD_Hom="):
-            #    if field.split("=")[1] != "nan":
-            #        gnomAD_hom = field.split("=")[1]
-            #if field.startswith("gnomAD_AN="):
-            #    if field.split("=")[1] != "nan":
-            #        gnomAD_an = field.split("=")[1]
+            if field.startswith("FATHMM_XF="):
+                if field.split("=")[1] != "nan":
+                    fathmm_xf = field.split("=")[1]
+            if field.startswith("CONDEL="):
+                if field.split("=")[1] != "nan":
+                    condel = field.split("=")[1]
+            if field.startswith("EIGEN_PHRED="):
+                if field.split("=")[1] != "nan":
+                    eigen_phred = field.split("=")[1]
+            if field.startswith("MutationAssessor="):
+                if field.split("=")[1] != "nan":
+                    mutation_assessor = field.split("=")[1]
+            if field.startswith("oe_lof="):
+                if field.split("=")[1] != "nan":
+                    oe_lof = field.split("=")[1]
+            if field.startswith("gnomAD_Hom="):
+                if field.split("=")[1] != "nan":
+                    gnomAD_hom = field.split("=")[1]
+            if field.startswith("gnomAD_AN="):
+                if field.split("=")[1] != "nan":
+                    gnomAD_an = field.split("=")[1]
+            if field.startswith("CAPICE"):
+                if field.split("=")[1] != "nan":
+                    capice = float(field.split("=")[1])
 
-            #if (gnomAD_hom != np.nan) & (gnomAD_an != np.nan) & (float(gnomAD_hom) > 0.0) & (float(gnomAD_an) > 0.0):
-            #    gnomAD_homAF = float(gnomAD_hom) / float(gnomAD_an)
+            if (gnomAD_hom != np.nan) & (gnomAD_an != np.nan) & (float(gnomAD_hom) > 0.0) & (float(gnomAD_an) > 0.0):
+                gnomAD_homAF = float(gnomAD_hom) / float(gnomAD_an)
 
-        #return [rank, annotation, fathmm_xf, condel, eigen_phred, mutation_assessor, gnomAD_homAF, oe_lof]
-        return [rank, annotation]
+        return [rank, annotation, fathmm_xf, condel, eigen_phred, mutation_assessor, gnomAD_homAF, capice]
+        #return [rank, annotation]
 
 
 def extract_vep_annotation(cell, annotation_header):
@@ -316,11 +323,11 @@ def extract_sample_information(row, sample):
 ## TODO: ADD homAF and oe_lof
 def add_INFO_fields_to_dataframe(vcf_as_dataframe):
     if indel_set:
-        #vcf_as_dataframe[["RANK", "indel_ID", "CSQ", "FATHMM_XF", "CONDEL", "EIGEN_PHRED", "MutationAssessor", "homAF", "oe_lof"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
-        vcf_as_dataframe[["RANK", "INDEL_ID", "CSQ"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
+        vcf_as_dataframe[["RANK", "INDEL_ID", "CSQ", "FATHMM_XF", "CONDEL", "EIGEN_PHRED", "MutationAssessor", "homAF", "CAPICE"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
+        #vcf_as_dataframe[["RANK", "INDEL_ID", "CSQ"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
     else:
-        #vcf_as_dataframe[["RANK", "CSQ", "FATHMM_XF", "CONDEL", "EIGEN_PHRED", "MutationAssessor", "homAF", "oe_lof"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
-        vcf_as_dataframe[["RANK", "CSQ"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
+        vcf_as_dataframe[["RANK", "CSQ", "FATHMM_XF", "CONDEL", "EIGEN_PHRED", "MutationAssessor", "homAF", "CAPICE"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
+        #vcf_as_dataframe[["RANK", "CSQ"]] = vcf_as_dataframe.INFO.apply(lambda x: pd.Series(extract_columns(x)))
 
     vcf_as_dataframe = vcf_as_dataframe.drop(columns=["INFO"])
 
@@ -329,7 +336,7 @@ def add_INFO_fields_to_dataframe(vcf_as_dataframe):
 
 def add_VEP_annotation_to_dataframe(vcf_as_dataframe):
     vcf_as_dataframe[annotation_header] = vcf_as_dataframe["CSQ"].apply(lambda x: pd.Series(extract_vep_annotation(x, annotation_header)))
-    vcf_as_dataframe["homAF"] = vcf_as_dataframe.apply(lambda x: pd.Series(calculate_homAF(x)), axis=1)
+    #vcf_as_dataframe["homAF"] = vcf_as_dataframe.apply(lambda x: pd.Series(calculate_homAF(x)), axis=1)
     vcf_as_dataframe = vcf_as_dataframe.drop(columns=["CSQ"])
 
     return vcf_as_dataframe
