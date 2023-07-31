@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-mean_dict = {"phastCons46mammal": 0.09691308336428194,
+MEAN_DICT = {"phastCons46mammal": 0.09691308336428194,
              "phastCons46primate": 0.12353343703613741,
              "phastCons46vertebrate": 0.1366339183101041,
              "phyloP46mammal": -0.0063575303590607925,
@@ -56,16 +56,16 @@ mean_dict = {"phastCons46mammal": 0.09691308336428194,
              "Eigen-PC-phred_coding": 4.501418,
              "GenoCanyon_score": 0.788855,
              "GERP++_RS": 3.161467,
-             "phyloP100way_vertebrate": 3.656086,
-             "phyloP30way_mammalian": 0.738286,
-             "phyloP17way_primate": 0.447020,
-             "phastCons100way_vertebrate": 0.730734,
-             "phastCons30way_mammalian": 0.720765,
-             "phastCons17way_primate": 0.698389,
+             "phyloP_vertebrate": 3.656086,
+             "phyloP_mammal": 0.738286,
+             "phyloP_primate": 0.447020,
+             "phastCons_vertebrate": 0.730734,
+             "phastCons_mammal": 0.720765,
+             "phastCons_primate": 0.698389,
              "SiPhy_29way_pi": 0.824618}
 
 
-median_dict = {"MutationAssessor": 1.87,
+MEDIAN_DICT = {"MutationAssessor": 1.87,
                "custom_MutationAssessor": 1.87,
                "CONDEL": 0.4805749233199981,
                "custom_CONDEL": 0.4805749233199981,
@@ -110,16 +110,16 @@ median_dict = {"MutationAssessor": 1.87,
                "Eigen-PC-phred_coding": 3.196693,
                "GenoCanyon_score": 0.999975,
                "GERP++_RS": 4.27,
-               "phyloP100way_vertebrate": 3.12,
-               "phyloP30way_mammalian": 1.026,
-               "phyloP17way_primate": 0.618,
-               "phastCons100way_vertebrate": 1.0,
-               "phastCons30way_mammalian": 0.986,
-               "phastCons17way_primate": 0.953,
+               "phyloP_vertebrate": 3.12,
+               "phyloP_mammal": 1.026,
+               "phyloP_primate": 0.618,
+               "phastCons_vertebrate": 1.0,
+               "phastCons_mammal": 0.986,
+               "phastCons_primate": 0.953,
                "SiPhy_29way_logOdds": 11.5556}
 
 
-random_seed = 14038
+RANDOM_SEED = 14038
 
 
 ## customize this method according to the features used in the training
@@ -146,30 +146,30 @@ def prepare_data_and_fill_missing_values(data_to_prepare, allele_frequency_list,
             data_to_prepare[feature] = data_to_prepare[feature].fillna(0)
         elif (feature == "SIFT"):
             data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
-            data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["SIFT"])
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(MEDIAN_DICT["SIFT"])
         elif feature == "CAPICE":
             data_to_prepare[feature] = data_to_prepare[feature].fillna(0.5)
         elif (feature == "SIFT_score"):
             data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
-            data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["SIFT_score"])
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(MEDIAN_DICT["SIFT_score"])
         elif (feature == "SIFT4G_score"):
             data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
-            data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["SIFT4G_score"])
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(MEDIAN_DICT["SIFT4G_score"])
         elif (feature == "FATHMM_score"):
             data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
-            data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["FATHMM_score"])
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(MEDIAN_DICT["FATHMM_score"])
         elif (feature == "PROVEAN_score"):
             data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: min([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
-            data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["PROVEAN_score"])
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(MEDIAN_DICT["PROVEAN_score"])
         elif feature == "oe_lof":
             data_to_prepare[feature] = data_to_prepare.apply(lambda row: min([float(value) for value in str(row[feature]).split("&") if ((value != ".") & (value != "nan") & (value != "") & (not ":" in value) & (not "-" in value))], default=np.nan), axis=1)
-            data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict["oe_lof"])
+            data_to_prepare[feature] = data_to_prepare[feature].fillna(MEDIAN_DICT["oe_lof"])
         else:
             data_to_prepare[feature] = data_to_prepare[feature].apply(lambda row: max([float(value) for value in str(row).split("&") if ((value != ".") & (value != "nan") & (value != ""))], default=np.nan))
             if ("phastCons" in feature) | ("phyloP" in feature):
-                data_to_prepare[feature] = data_to_prepare[feature].fillna(mean_dict[feature])
+                data_to_prepare[feature] = data_to_prepare[feature].fillna(MEAN_DICT[feature])
             else:
-                data_to_prepare[feature] = data_to_prepare[feature].fillna(median_dict[feature])
+                data_to_prepare[feature] = data_to_prepare[feature].fillna(MEDIAN_DICT[feature])
 
     return data_to_prepare
 
@@ -184,15 +184,15 @@ def perform_preparation_and_save(in_data_benign, in_data_path, out_train, out_te
     prepared_data_benign = prepare_data_and_fill_missing_values(data_to_prepare_benign, allele_frequency_list, feature_list)
     prepared_data_pathogenic = prepare_data_and_fill_missing_values(data_to_prepare_path, allele_frequency_list, feature_list)
     
-    train_data_benign = prepared_data_benign.sample(frac=0.9, random_state=14038)
-    train_data_pathogenic = prepared_data_pathogenic.sample(frac=0.9, random_state=14038)
+    train_data_benign = prepared_data_benign.sample(frac=0.9, random_state=RANDOM_SEED)
+    train_data_pathogenic = prepared_data_pathogenic.sample(frac=0.9, random_state=RANDOM_SEED)
     test_data_benign = prepared_data_benign.drop(train_data_benign.index)
     test_data_pathogenic = prepared_data_pathogenic.drop(train_data_pathogenic.index)
     
     final_train_data = pd.concat([train_data_benign, train_data_pathogenic])
-    final_train_data = final_train_data.sort_values(["CHROM", "POS"], ascending=[True, True])
+    final_train_data = final_train_data.sort_values(["#CHROM", "POS"], ascending=[True, True])
     final_test_data = pd.concat([test_data_benign, test_data_pathogenic])
-    final_test_data = final_test_data.sort_values(["CHROM", "POS"], ascending=[True, True])
+    final_test_data = final_test_data.sort_values(["#CHROM", "POS"], ascending=[True, True])
     
     final_train_data.to_csv(out_train, sep="\t", index=False)
     final_test_data.to_csv(out_test, sep="\t", index=False)

@@ -22,7 +22,7 @@ random_seed = 14038
 
 
 def extract_features_from_input_data(data_to_extract, feature_list):
-    extracted_labels = np.asarray(data_to_extract["RANK"])
+    extracted_labels = np.asarray(data_to_extract["CLASS_LABEL"])
     extracted_features = np.asarray(data_to_extract[feature_list])
 
     return extracted_features, extracted_labels
