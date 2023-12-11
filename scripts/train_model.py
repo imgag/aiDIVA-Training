@@ -20,27 +20,36 @@ from sklearn.metrics import average_precision_score
 from sklearn.metrics import matthews_corrcoef
 
 
-random_seed = 14038
+RANDOM_SEED = 14038
 
 
 DEFAULT_PARAM_INFRAME_RF = {"bootstrap": [True],
-                            "class_weight": ["balanced"],
-                            "criterion": ["entropy"],
+                            "class_weight": [None],
+                            "criterion": ["gini"],
                             "max_depth": [None],
-                            "max_features": ["sqrt"],
-                            "max_leaf_nodes": [None],
-                            "max_samples": [None],
-                            "min_samples_leaf": [2],
-                            "min_samples_split": [5],
-                            "n_estimators": [100],
+                            "max_features": [1/3],
+                            "min_samples_leaf": [1],
+                            "min_samples_split": [2],
+                            "n_estimators": [1000],
                             "oob_score": [False]}
+
+PARAM_GRID_INFRAME_RF = {"bootstrap": [True],
+                     "class_weight": ["balanced", None],
+                     "criterion": ["entropy", "gini", "log_loss"],
+                     "max_depth": [5, 7, 9, None],
+                     "max_features": ["sqrt", "log2", 1/3],
+                     #"min_samples_leaf": [1],
+                     #"min_samples_split": [2],
+                     "n_estimators": [1000], # not needed to tune (no risk of overfitting if number of trees increases)
+                     "oob_score": [False]}
+
 
 DEFAULT_PARAM_SNP_RF = {"bootstrap": [True],
                         "class_weight": [None],
-                        "criterion": ["entropy"],
+                        "criterion": ["gini"],
                         "max_depth": [None],
                         "max_features": ["sqrt"],
-                        "min_samples_leaf": [2],
+                        "min_samples_leaf": [1],
                         "min_samples_split": [2],
                         "n_estimators": [1000],
                         "oob_score": [False]}
@@ -121,7 +130,7 @@ def extract_features_from_input_data(data_to_extract, feature_list):
     return extracted_features, extracted_labels
 
 
-def train_model_with_gridsearch(training_features, training_labels, feature_list, is_indel, hyperparameter_tuning=False, model_type="RF"):
+def train_model_with_gridsearch(training_features, training_labels, feature_list, is_indel=False, hyperparameter_tuning=False, model_type="RF"):
     # grid with the default parameters
     parameter_grid_rf = {"n_estimators": [1000],
                       "criterion": ["gini"],
@@ -147,44 +156,81 @@ def train_model_with_gridsearch(training_features, training_labels, feature_list
         if model_type == "RF":
             if is_indel:
                 parameter_grid_to_use = DEFAULT_PARAM_INFRAME_RF
-                classifier = RandomForestClassifier(random_state = random_seed)
+                classifier = RandomForestClassifier(random_state = RANDOM_SEED)
 
             else:
                 parameter_grid_to_use = DEFAULT_PARAM_SNP_RF
-                classifier = RandomForestClassifier(random_state = random_seed)
+                classifier = RandomForestClassifier(random_state = RANDOM_SEED)
 
         elif model_type == "AB":
             if is_indel:
                 parameter_grid_to_use = DEFAULT_PARAM_INFRAME_AB
-                classifier = AdaBoostClassifier(estimator=DecisionTreeClassifier(random_state=random_seed), random_state = random_seed)
+                classifier = AdaBoostClassifier(estimator=DecisionTreeClassifier(random_state=RANDOM_SEED), random_state = RANDOM_SEED)
 
             else:
                 parameter_grid_to_use = DEFAULT_PARAM_SNP_AB
-                classifier = AdaBoostClassifier(estimator=DecisionTreeClassifier(random_state=random_seed), random_state = random_seed)
+                classifier = AdaBoostClassifier(estimator=DecisionTreeClassifier(random_state=RANDOM_SEED), random_state = RANDOM_SEED)
 
         elif model_type == "HGB":
             if is_indel:
                 parameter_grid_to_use = DEFAULT_PARAM_INFRAME_HGB
-                classifier = HistGradientBoostingClassifier(random_state = random_seed)
+                classifier = HistGradientBoostingClassifier(random_state = RANDOM_SEED)
 
             else:
                 parameter_grid_to_use = DEFAULT_PARAM_SNP_HGB
-                classifier = HistGradientBoostingClassifier(random_state = random_seed)
+                classifier = HistGradientBoostingClassifier(random_state = RANDOM_SEED)
 
         elif model_type == "SVM":
             if is_indel:
                 parameter_grid_to_use = DEFAULT_PARAM_INFRAME_SVM
-                classifier = SVC(random_state = random_seed)
+                classifier = SVC(random_state = RANDOM_SEED)
 
             else:
                 parameter_grid_to_use = DEFAULT_PARAM_SNP_SVM
-                classifier = SVC(random_state = random_seed)
+                classifier = SVC(random_state = RANDOM_SEED)
 
         else:
             pass
 
     else:
-        pass
+        if model_type == "RF":
+            if is_indel:
+                parameter_grid_to_use = PARAM_GRID_INFRAME_RF
+                classifier = RandomForestClassifier(random_state = RANDOM_SEED)
+
+            else:
+                parameter_grid_to_use = PARAM_GRID_SNP_RF
+                classifier = RandomForestClassifier(random_state = RANDOM_SEED)
+
+        elif model_type == "AB":
+            if is_indel:
+                parameter_grid_to_use = PARAM_GRID_INFRAME_AB
+                classifier = AdaBoostClassifier(estimator=DecisionTreeClassifier(random_state=RANDOM_SEED), random_state = RANDOM_SEED)
+
+            else:
+                parameter_grid_to_use = PARAM_GRID_SNP_AB
+                classifier = AdaBoostClassifier(estimator=DecisionTreeClassifier(random_state=RANDOM_SEED), random_state = RANDOM_SEED)
+
+        elif model_type == "HGB":
+            if is_indel:
+                parameter_grid_to_use = PARAM_GRID_INFRAME_HGB
+                classifier = HistGradientBoostingClassifier(random_state = RANDOM_SEED)
+
+            else:
+                parameter_grid_to_use = PARAM_GRID_SNP_HGB
+                classifier = HistGradientBoostingClassifier(random_state = RANDOM_SEED)
+
+        elif model_type == "SVM":
+            if is_indel:
+                parameter_grid_to_use = PARAM_GRID_INFRAME_SVM
+                classifier = SVC(random_state = RANDOM_SEED)
+
+            else:
+                parameter_grid_to_use = PARAM_GRID_SNP_SVM
+                classifier = SVC(random_state = RANDOM_SEED)
+
+        else:
+            pass
 
     #classifier = RandomForestClassifier(random_state = random_seed)
     #ab_clf = AdaBoostClassifier(base_estimator = DecisionTreeClassifier(),random_state = random_seed)
@@ -258,5 +304,8 @@ if __name__=='__main__':
     #print(train_data.columns)
     #print(test_data.columns)
     #print(feature_list)
+    
+    print("InDel model:", args.is_indel)
+    print("Hyperparamter tuning:", args.hyperparameter_tuning)
 
     perform_model_training_and_evaluation(feature_list, train_data, test_data, args.model_name, args.model_type, args.is_indel, args.hyperparameter_tuning)
